@@ -29,19 +29,19 @@ ld -r -b binary build/resources/font/Noto_Sans/Default_Font.ttf \
 echo -e "${YELLOW}Compiling executables.${NC}"
 
 g++ \
- -ISDL3/include/ -ISDL3_ttf/include/ -ISDL_image/include/ -lSDL_image -lSDL3_ttf -lSDL3 \
+ -ISDL3/include/ -ISDL3_ttf/include/ -ISDL_image/include/ -lSDL3_image -lSDL3_ttf -lSDL3 \
  -Wall -Wextra -pedantic \
  -c src/gui/window.cpp \
  -o build/window.o
 
 g++ \
- -ISDL3/include/ -ISDL3_ttf/include/ -ISDL_image/include/ -lSDL_image -lSDL3_ttf -lSDL3 \
+ -ISDL3/include/ -ISDL3_ttf/include/ -ISDL_image/include/ -lSDL3_image -lSDL3_ttf -lSDL3 \
  -c src/gui/HSButton.cpp -o build/HSButton.o \
  -Wall -Wextra -pedantic \
 
 g++ -c src/main.cpp -o build/main.o \
  -Wall -Wextra -pedantic \
- -ISDL3/include/ -ISDL3_ttf/include/ -ISDL_image/include/ -lSDL_image -lSDL3_ttf -lSDL3
+ -ISDL3/include/ -ISDL3_ttf/include/ -ISDL_image/include/ -lSDL3_image -lSDL3_ttf -lSDL3
 
 echo -e "${YELLOW}Basically linking everything together at this point!${NC}"
 
@@ -49,7 +49,7 @@ cd build
 ln -s ../src/res res
 
 g++ *.o resources/*.o -o test_build \
- -ISDL3/include/ -ISDL3_ttf/include/ -ISDL_image/include/ -lSDL_image -lSDL3_ttf -lSDL3
+ -ISDL3/include/ -ISDL3_ttf/include/ -ISDL_image/include/ -L../../sdl_img_build/ -lSDL3_image -lSDL3_ttf -lSDL3
 
 echo -e "${GREEN}Done!${NC}"
 
