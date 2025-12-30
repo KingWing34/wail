@@ -1,10 +1,12 @@
+#include <cstdlib>
+#include <cstdio>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
 #include <threads.h>
-#include <miko.h>
+#include "miko.h"
 
 // src/gui/MainWindow.cpp
 int MainWindow(void (*on_create)(void *data), void (*on_loop)(void *data));
@@ -49,7 +51,7 @@ struct entity_op entity_op[entity_op_size] = {
 	0
 };
 
-#include <op.h>
+#include "op.h"
 
 int on_tick_entity(struct map_entity *entity, struct graphics *graphics){
 	struct entity_op f = entity_op[entity->type];
