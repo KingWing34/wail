@@ -54,48 +54,58 @@ int SmartRendering() {
 
     // Display and manage main window components, such as button presses,
     // window resizing, other window events, mouse events etc. (TODO)
-int MainWindow(void (*on_loop)(void *data)) {
-    bool SDL_tasks_done {0};
 
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
-        SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
-        return 1;
-    }
+struct graphics {
+	SDL_Window *window;
+	SDL_Renderer *renderer;
+};
 
-    if (!TTF_Init()) {
-        SDL_Log("Couldn't initialize TTF: %s", SDL_GetError());
-        return 1;
-    }
+int MainWindow(void (*on_loop)(void *data)){
+	bool SDL_tasks_done {0};
+	if (!SDL_Init(SDL_INIT_VIDEO)) {
+	SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
+	return 1;
+	}
 
-    // TODO (create window with paramaters from config file)
-    if (!SDL_CreateWindowAndRenderer (
-        PROGRAM_NAME " " PROGRAM_VERSION,
-        WINDOW_WIDTH, WINDOW_HEIGHT,
-        SDL_WINDOW_RESIZABLE,
-        &window, &renderer)) {
-            SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
-            return 1;
-    }
+	if (!TTF_Init()) {
+	SDL_Log("Couldn't initialize TTF: %s", SDL_GetError());
+	return 1;
+	}
 
-    // Main program loop
-    while (!SDL_tasks_done) {
-        SDL_Event event;
+	// TODO (create window with paramaters from config file)
+	if (!SDL_CreateWindowAndRenderer (
+	PROGRAM_NAME " " PROGRAM_VERSION,
+	WINDOW_WIDTH, WINDOW_HEIGHT,
+	SDL_WINDOW_RESIZABLE,
+	&window, &renderer)) {
+	    SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
+	    return 1;
+	}
 
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_EVENT_QUIT) {
-                SDL_tasks_done = 1;
-            }
-        }
+	struct graphics gdata = {
+		.window = window,
+		.renderer = renderer
+	};
 
-        on_loop(NULL);
+	// Main program loop
+	while (!SDL_tasks_done) {
+	SDL_Event event;
 
-        // Clear the window making the background transparent
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderClear(renderer);
+	while (SDL_PollEvent(&event)) {
+	    if (event.type == SDL_EVENT_QUIT) {
+	        SDL_tasks_done = 1;
+	    }
+	}
 
-        SDL_RenderPresent(renderer);
-        SDL_Delay(10); // temporary CPU limiter WARNING
-    }
+	// Clear the window making the background transparent
+	//SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+	//SDL_RenderClear(renderer);
 
-    return 0;
+	on_loop(&gdata);
+
+	SDL_RenderPresent(renderer);
+	SDL_Delay(10); // temporary CPU limiter WARNING
+	}
+
+	return 0;
 }

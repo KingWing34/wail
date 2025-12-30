@@ -16,9 +16,15 @@ void cleanup() {
 void on_loop(void *);
 
 #define entity_op_size 1028
+#define biome_forest 10
 
-struct map_entity biome_forest = {
+/*struct map_entity biome_forest = {
 	.type = 10
+};*/
+
+struct graphics {
+	SDL_Window *window;
+	SDL_Renderer *renderer;
 };
 
 struct map_entity entity_type_fox = {
@@ -26,35 +32,118 @@ struct map_entity entity_type_fox = {
 };
 
 struct map map;
+struct entity_op_data {
+	struct map *map;
+	struct map_entity *entity;
+	struct graphics *graphics;
+};
 
-void (*entity_op[entity_op_size])(struct map *, void *) = {
+struct entity_op {
+	void (*on_tick)(struct entity_op_data *);
+	void (*on_init)(struct entity_op_data *);
+	void (*on_new)(struct entity_op_data *);
+};
+
+struct entity_op entity_op[entity_op_size] = {
 	0
 };
 
 #include <op.h>
 
-int main(){ // for testing only (TODO)
+int on_tick_entity(struct map_entity *entity, struct graphics *graphics){
+	struct entity_op f = entity_op[entity->type];
+	if(f.on_tick == NULL){
+		printf("[TICK] Warning: Unhandled entity type (%i)\n", entity->type);
+
+		return 1;
+	}
+
+	struct entity_op_data data = {
+		.map = &map,
+		.entity = entity,
+		.graphics = graphics
+	};
+
+	f.on_tick(&data);
+
+	return 0;
+}
+
+int on_tick(struct graphics *graphics){
+	size_t count = map_entities_len(&map);
+	for(int i = 0; i < count; i++){
+		on_tick_entity(&map.entities[i], graphics);
+	}
+
+	return 0;
+}
+
+void on_loop(void *data){
+	struct graphics *gdata = (struct graphics *) data;
+	on_tick(gdata);
+}
+
+unsigned int entity_new_count = 0;
+struct map_entity *entity_new(struct map *map,
+	unsigned int type
+){
+	struct map_entity entity = {
+		.id = entity_new_count++,
+		.type = type
+	};
+
+	struct entity_op_data data = {
+		.entity = &entity
+	};
+	struct entity_op *op = &entity_op[type];
+	if(op->on_new != NULL){
+		op->on_new(&data);
+	} else {
+		printf("[NEW] Warning: Unhandled entity type (%i)\n", type);
+	}
+
+	return map_entities_add(map, &entity);
+}
+
+void (*start)();
+
+void mapgen(){
+	struct map_entity *entity = entity_new(&map, biome_forest);
+}
+
+int main(){
 	map_new(&map);
 
 	OP_INCLUDE();
 
-	for(int i = 0; i < 32; i++){
-		map_entities_add(&map, &biome_forest);
+	int i = 0;/*
+	for(i = 0; i < 32; i++){
+		map_new(&map, biome_forest);
 	}
 
 	map_entities_unset(&map, 12);
 
 
-	for(int i = 0; i < map_entities_len(&map); i++){
-		printf("%i) %i\n", i, map.entities[i].type);
+	for(i = 0; i < map_entities_len(&map); i++){
+		//printf("%i) %i\n", i, map.entities[i].type);
 	}
 
 	printf("  === DEFRAG ===\n");
 	map_entities_defrag(&map);
 
-	for(int i = 0; i < map_entities_len(&map); i++){
-		printf("%i) %i\n", i, map.entities[i].type);
+	for(i = 0; i < map_entities_len(&map); i++){
+		//printf("%i) %i\n", i, map.entities[i].type);
+	}*/
+
+	for(i = 0; i < entity_op_size; i++){
+		struct entity_op *op = &entity_op[i];
+		if(op->on_init == NULL)
+			continue ;
+
+		op->on_init(NULL);
 	}
+
+	mapgen();
 
 	if(MainWindow(on_loop) != 0) {
 		cleanup();
@@ -62,33 +151,4 @@ int main(){ // for testing only (TODO)
 	}
 
 	return 0;
-}
-
-int on_entity(struct map_entity *entity){
-	void (*f)(struct map *, void *) = entity_op[entity->type];
-	if(f == NULL){
-		printf("Warning: Unhandled entity type (%i)\n", entity->type);
-
-		return 1;
-	}
-
-	f(&map, entity);
-
-	return 0;
-}
-
-int on_tick(){
-	size_t count = map_entities_len(&map);
-	printf("%i\n", count);
-	for(int i = 0; i < count; i++){
-		on_entity(&map.entities[i]);
-	}
-
-	printf("tick\n");
-
-	return 0;
-}
-
-void on_loop(void *data){
-	on_tick();
 }

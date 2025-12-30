@@ -39,7 +39,9 @@ size_t map_entities_len(struct map *map){
 	return i;
 }
 
-int map_entities_add(struct map *map, struct map_entity *entity){
+struct map_entity *map_entities_add(struct map *map,
+	struct map_entity *entity
+){
 	void *nalloc = POINTER_UNITIALIZED;
 	size_t count = 0;
 	for(;
@@ -61,7 +63,7 @@ int map_entities_add(struct map *map, struct map_entity *entity){
 	memcpy(&map->entities[count], entity, sizeof(struct map_entity));
 	map->entities[count + 1].type = 0;
 
-	return 0;
+	return &map->entities[count];
 }
 
 int map_entities_unset(struct map *map, size_t index){
