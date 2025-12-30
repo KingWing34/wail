@@ -3,16 +3,75 @@
 #define POINTER_UNITIALIZED ((void *)0x144)
 #define MAP_ENTITY_NULL 0
 #define MAP_ENTITY_UNSET 1
+#define OUT_OF_MEMORY 2
 
 #include <sqlite3.h>
 #include <threads.h>
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
+
+#define entity_op_size 1028
+
+struct graphics {
+	SDL_Window *window;
+	SDL_Renderer *renderer;
+};
+
+struct entity_op_data {
+	struct map *map;
+	struct map_entity *entity;
+	struct graphics *graphics;
+};
+
+struct entity_op {
+	void (*on_tick)(struct entity_op_data *);
+	void (*on_init)(struct entity_op_data *);
+	void (*on_new)(struct entity_op_data *);
+};
+
+struct texture_animation {
+	size_t count;
+
+	SDL_Texture **frames;
+};
+
+struct texture {
+	char *name;
+	char *type;
+	SDL_Texture *texture;
+	struct texture_animation *animation;
+	IMG_Animation *animation_data;
+};
+
+void load_textures(
+	struct texture *,
+	SDL_Renderer *
+);
+struct animation {
+	struct texture *texture;
+};
+
+struct map_position {
+	float x;
+	float y;
+	float z;
+};
+
+struct map_entity_action {
+	char *name;
+	void (*call)(void *);
+};
 
 struct map_entity {
 	unsigned int id;
 	unsigned int type;
 
 	struct map_entity *next;
+	struct map_entity_action *actions;
+	struct map_position position[1];
+	struct animation *animation;
 	void *data;
 };
 
@@ -20,116 +79,22 @@ struct map {
 	struct map_entity *entities;
 };
 
-int map_new(struct map *map){
-	memset(map, 0, sizeof(struct map));
+int map_new(struct map *);
+size_t map_entities_len(struct map *);
+struct map_entity *map_entities_add(struct map *, struct map_entity *);
+int map_entities_unset(struct map *, size_t);
+int map_entities_defrag(struct map *);
+struct map_entity *map_entities_get(struct map *, size_t);
+int map_entity_position(struct map_entity *entity);
+void map_entity_move(
+	struct map_entity *, float, float, float
+);
 
-	return 0;
-}
+void map_entity_translate(
+	struct map_entity *, struct map_entity *, struct map_position *
+);
 
-size_t map_entities_len(struct map *map){
-	if(map->entities == NULL){
-		return 0;
-	}
-
-	size_t i = 0;
-	while(map->entities[i].type != 0){
-		i++;
-	}
-
-	return i;
-}
-
-struct map_entity *map_entities_add(struct map *map,
-	struct map_entity *entity
-){
-	void *nalloc = POINTER_UNITIALIZED;
-	size_t count = 0;
-	for(;
-		(map->entities != NULL)
-			&& (map->entities[count].type != MAP_ENTITY_NULL);
-	count++){
-		if(map->entities[count].type == 1){
-			break ;
-		}
-	}
-
-	nalloc = realloc(map->entities,
-		(sizeof(struct map_entity) * (count + 2))
-	);
-	if(nalloc == NULL){
-		exit(1); //TODO: OUT OF MEMORY
-	}
-	map->entities = (struct map_entity *) nalloc;
-	memcpy(&map->entities[count], entity, sizeof(struct map_entity));
-	map->entities[count + 1].type = 0;
-
-	return &map->entities[count];
-}
-
-int map_entities_unset(struct map *map, size_t index){
-	if(map->entities == NULL){
-		return -1;
-	}
-
-	size_t count = map_entities_len(map);
-	if(index > count)
-		return -1;
-
-	map->entities[index].type = MAP_ENTITY_UNSET;
-
-	return 0;
-}
-
-int map_entities_defrag(struct map *map){
-	if(map->entities == NULL)
-		return -1;
-
-	size_t count = map_entities_len(map);
-	struct map_entity *copy = (struct map_entity *)
-		malloc(sizeof(struct map_entity)*count)
-	;
-	size_t new_size = 0;
-	size_t position = 0;
-	while(map->entities[position].type != 0){
-		if(map->entities[position].type == 1){
-			position++;
-
-			continue ;
-		}
-
-		memcpy(&copy[new_size],
-			&map->entities[position],
-			sizeof(struct map_entity)
-		);
-
-		position++;
-		new_size++;
-	}
-
-	copy[new_size].type = 0;
-
-	new_size++;
-	copy = (struct map_entity *)
-		realloc(copy, sizeof(struct map_entity)*new_size);
-	map->entities = copy;
-
-	return 0;
-}
-
-struct map_entity *map_entities_get(struct map *map, size_t index){
-	if(map->entities == NULL){
-		return NULL;
-	}
-
-	size_t count = map_entities_len(map);
-	if(index > count)
-		return NULL;
-
-	return &map->entities[index];
-}
-
-struct animation {
-	SDL_Surface **frames;
-};
+void map_position_to_frect(struct map_position *, SDL_FRect *, float, float);
+unsigned long long get_time();
 
 #endif

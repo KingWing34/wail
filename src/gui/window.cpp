@@ -106,8 +106,8 @@ int MainWindow(void (*on_create)(void *data), void (*on_loop)(void *data)){
 		}
 
 		// Clear the window making the background transparent
-		//SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-		//SDL_RenderClear(renderer);
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+		SDL_RenderClear(renderer);
 
 		on_loop(&gdata);
 

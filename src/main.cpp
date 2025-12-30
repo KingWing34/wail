@@ -5,6 +5,7 @@
 
 #include <threads.h>
 #include <miko.h>
+#include <miko.c>
 
 // src/gui/MainWindow.cpp
 int MainWindow(void (*on_create)(void *data), void (*on_loop)(void *data));
@@ -16,35 +17,17 @@ void cleanup() {
 
 void on_loop(void *);
 
-#define entity_op_size 1028
 #define biome_forest 10
 
 /*struct map_entity biome_forest = {
 	.type = 10
 };*/
 
-struct graphics {
-	SDL_Window *window;
-	SDL_Renderer *renderer;
-};
-
 struct map_entity entity_type_fox = {
 	.type = 102
 };
 
 struct map map;
-struct entity_op_data {
-	struct map *map;
-	struct map_entity *entity;
-	struct graphics *graphics;
-};
-
-struct entity_op {
-	void (*on_tick)(struct entity_op_data *);
-	void (*on_init)(struct entity_op_data *);
-	void (*on_new)(struct entity_op_data *);
-};
-
 struct entity_op entity_op[entity_op_size] = {
 	0
 };
@@ -109,7 +92,7 @@ struct map_entity *entity_new(struct map *map,
 void (*start)();
 
 void mapgen(){
-	struct map_entity *entity = entity_new(&map, biome_forest);
+	struct map_entity *entity = entity_new(&map, 101);
 }
 
 void on_create(void *data){

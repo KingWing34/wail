@@ -6,6 +6,10 @@ YELLOW='\033[1;33m'
 GREEN='\033[1;32m'
 NC='\033[0m'
 
+cd src
+node op_gen.js
+cd ..
+
 # Yes, this is all kinda hardcoded, live with it.
 echo -e "${YELLOW}Removing old build.${NC}"
 rm -r build
@@ -48,7 +52,7 @@ echo -e "${YELLOW}Basically linking everything together at this point!${NC}"
 cd build
 ln -s ../src/res res
 
-g++ *.o resources/*.o -o test_build \
+g++ *.o resources/*.o ../src/op/*.o -o test_build \
  -L../SDL3 -L../SDL3_ttf -lSDL3_ttf -lSDL3 `pkg-config --cflags --libs sdl3 sdl3-image`
 
 echo -e "${GREEN}Done!${NC}"
