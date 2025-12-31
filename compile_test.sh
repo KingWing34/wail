@@ -56,15 +56,18 @@ ld -r -b binary build/resources/font/Noto_Sans/Default_Font.ttf \
 echo -e "${YELLOW}Compiling executables.${NC}"
 
 # THIS .JS IS FAILING ON PC (FIX/DELETE?)
-# cd src
-# node op_gen.js
-# cd ..
+# Run this after you installed nodejs -Miko
+cd src
+node op_gen.js
+mv op/*.o ../build/op
+cd ..
 
-g++ $INCLUDE_LIB_PATHS $LIB_NAMES $COMPILER_FLAGS \
-	-c src/op/biome_forest.c -o build/op/biome_forest.o
+# These 2 are handled by op_gen.js -Miko
+# g++ $INCLUDE_LIB_PATHS $LIB_NAMES $COMPILER_FLAGS \
+# 	-c src/op/biome_forest.c -o build/op/biome_forest.o
 
-g++ $INCLUDE_LIB_PATHS $LIB_NAMES $COMPILER_FLAGS \
-	-c src/op/slime.c -o build/op/slime.o
+# g++ $INCLUDE_LIB_PATHS $LIB_NAMES $COMPILER_FLAGS \
+#	 -c src/op/slime.c -o build/op/slime.o
 
 g++ $INCLUDE_LIB_PATHS $LIB_NAMES $COMPILER_FLAGS \
 	-c src/gui/window.cpp -o build/window.o
