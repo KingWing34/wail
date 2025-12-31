@@ -21,34 +21,61 @@ static struct texture textures[] = {
 	}
 };
 
-int counter = 0;
+
+static struct slime_data {
+	size_t age;
+	size_t frame;
+	int64_t directionX;
+	int64_t directionY;
+};
+
+static void on_fps12(struct entity_op_data *data){
+	struct texture texture = textures[0];
+	struct map_entity *entity = data->entity;
+	struct slime_data *slime = (struct slime_data *) entity->data;
+	slime->age += 1;
+	slime->frame = (slime->age / 4) % 10;
+	// texture.animation->count
+	if(slime->frame >= 4){
+		slime->frame = 5;
+	}
+
+	int64_t directionX = slime->directionX == 0
+		? -1
+		: 1
+	;
+	if(slime->frame > 4){
+		map_entity_move(entity, 4 * directionX, 0, 0);
+	} else {
+		slime->directionX = ((int64_t) SDL_rand(2));
+	}
+}
+
 static void on_tick(struct entity_op_data *data){
 	struct map_entity *entity = data->entity;
+	struct slime_data *slime = (struct slime_data *) entity->data;
 	SDL_Renderer *renderer = data->graphics->renderer;
-	struct texture slime = textures[0];
-	int cframe = (counter / 32) % slime.animation->count;
-	SDL_Texture *frame = slime.animation->frames[
+	struct texture texture = textures[0];
+	size_t cframe = slime->frame;
+	SDL_Texture *frame = texture.animation->frames[
 		cframe
 	];
 	SDL_SetTextureBlendMode(frame, SDL_BLENDMODE_BLEND);
 
-	if(cframe > 4)
-		map_entity_move(entity, 2, 0, 0);
-
 	struct SDL_FRect frect;
 	map_position_to_frect(entity->position, &frect, 64, 64);
 
-	//printf("%i\n", (counter / 64) % slime.animation->count);
 	SDL_RenderTexture(renderer, frame, NULL, &frect);
 	int width;
 	int height;
 
 	SDL_GetWindowSize(data->graphics->window, &width, &height);
 
-	counter++;
-
 	//printf("%i\r", counter);
 	//fflush(stdout);
+
+
+	fflush(stdout);
 }
 
 static void on_init(struct entity_op_data *data){
@@ -59,22 +86,22 @@ static void on_init(struct entity_op_data *data){
 	printf("INITIALIZED\n");
 }
 
-static void op_fps12(void *data){
-	struct map_entity *entity = (struct map_entity *) data;
-
-	printf("%ull -> %ull                  \r", entity->id, SDL_GetTicks());
-	fflush(stdout);
-}
-
 static void on_new(struct entity_op_data *data){
 	printf("%i CREATED\n", data->entity->type);
 	struct map_entity *entity = data->entity;
 
-	entity->position->x = 0;
+	entity->position->x = 100;
 	entity->position->y = 0;
 	entity->position->z = 0;
 
-	fps12(&op_fps12, data->entity);
+	struct slime_data *slime =
+		(struct slime_data *) malloc(sizeof(struct slime_data))
+	;
+	slime->age = 0;
+	slime->directionX = 1;
+	slime->directionY = 1;
+
+	entity->data = (void *) slime;
 }
 
 void op_slime(){
@@ -83,6 +110,24 @@ void op_slime(){
 	entity_op[(unsigned int) 101] = (struct entity_op) {
 		.on_tick = &on_tick,
 		.on_init = &on_init,
-		.on_new = &on_new
+		.on_new = &on_new,
+
+		.on_fps12 = &on_fps12,
+		.on_fps24 = NULL,
+		.on_fps30 = NULL
 	};
+
+	struct array_element *test = (struct array_element *)
+		malloc(sizeof(struct array_element) * 64)
+	;
+
+	/*size_t i = 0;
+	while(i < 63){
+		test[i].data = (void *) "Hemlo";
+		i++;
+	}
+
+	test[63].data = NULL;
+
+	printf("Length: %zu\n", array_len(test));*/
 }

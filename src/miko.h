@@ -29,6 +29,10 @@ struct entity_op {
 	void (*on_tick)(struct entity_op_data *);
 	void (*on_init)(struct entity_op_data *);
 	void (*on_new)(struct entity_op_data *);
+
+	void (*on_fps12)(struct entity_op_data *);
+	void (*on_fps24)(struct entity_op_data *);
+	void (*on_fps30)(struct entity_op_data *);
 };
 
 struct texture_animation {
@@ -84,7 +88,8 @@ struct map {
 };
 
 struct fps_callback {
-	void (*f)(void *);
+	void (*f)(void *, void *);
+	void *user;
 	void *data;
 };
 
@@ -110,8 +115,15 @@ uint64_t fps_get_time();
 void fps_call(struct fps_callback *);
 void fps_push(struct fps_callback **, void (*)(void *), void *);
 
-void fps12(void (*)(void *), void *);
-void fps24(void (*)(void *), void *);
-void fps30(void (*)(void *), void *);
+void fps12(void (*)(void *, void *), void *, void *);
+void fps24(void (*)(void *, void *), void *, void *);
+void fps30(void (*)(void *, void *), void *, void *);
+
+struct array_element {
+	void *data;
+};
+
+size_t array_len(struct array_element *);
+void array_push(struct array_element **, struct array_element *);
 
 #endif

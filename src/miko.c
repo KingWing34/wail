@@ -238,8 +238,8 @@ void map_position_to_frect(
 	frect->h = height;
 }
 
-void ffpsnull(void *data){ return ; }
-void (*fpsnull)(void *) = &ffpsnull;
+void ffpsnull(void *user, void *data){ return ; }
+void (*fpsnull)(void *, void *) = &ffpsnull;
 
 /*void (**fps12flist)(void *) = { fpsnull };
 void (**fps24flist)(void *) = { fpsnull };
@@ -253,7 +253,10 @@ uint64_t fps12last = 0;
 uint64_t fps24last = 0;
 uint64_t fps30last = 0;
 
-void fps_push(struct fps_callback **list, void (*f)(void *), void *data){
+void fps_push(struct fps_callback **list, void (*f)(void *, void *),
+	void *user,
+	void *data
+){
 	if(f == NULL)
 		return ;
 
@@ -273,6 +276,7 @@ void fps_push(struct fps_callback **list, void (*f)(void *), void *data){
 
 	list[0] = np;
 	list[0][size].f = f;
+	list[0][size].user = user;
 	list[0][size].data = data;
 	list[0][size + 1].f = fpsnull;
 }
@@ -280,7 +284,7 @@ void fps_push(struct fps_callback **list, void (*f)(void *), void *data){
 void fps_call(struct fps_callback *list){
 	size_t size = 0;
 	while(list != NULL && list[size].f != fpsnull){
-		list[size].f(list[size].data);
+		list[size].f(list[size].user, list[size].data);
 
 		size++;
 	}
@@ -290,26 +294,83 @@ uint64_t fps_get_time(){
 	return (uint64_t) SDL_GetTicks();
 }
 
-void fps12(void (*f)(void *), void *data){
-	fps_push(&fps12list, f, data);
+void fps12(void (*f)(void *, void *), void *user, void *data){
+	fps_push(&fps12list, f, user, data);
 
 	if(f != NULL)
 		return ;
 
 	uint64_t now = fps_get_time();
 	uint64_t ticks = (now - fps12last)/83;
+
 	if(ticks > 0){
-		for(uint64_t i = 0; i < ticks; i++)
+		for(uint64_t i = 0; i < ticks; i++){
 			fps_call(fps12list);
+		}
 
 		fps12last = now;
 	}
 }
 
-void fps24(void (*f)(void *), void *data){
+// TODO: Implement for fps 24 and fps 30
+void fps24(void (*f)(void *, void *), void *user, void *data){
+	//printf("WARNING: miko.c -> fps24 is unimplemented!\n");
+
 	return ;
 }
 
-void fps30(void (*f)(void *), void *data){
+void fps30(void (*f)(void *, void *), void *user, void *data){
+	//printf("WARNING: miko.c -> fps30 is unimplemented!\n");
+
 	return ;
+}
+
+/*size_t array_len(void *varray, int usize){
+	size_t count = 0;
+	char *array = (char *) varray;
+
+	while((array + (usize * count)) != 0)
+		count++;
+
+	return count;
+}
+
+void array_push(void *varray, void *vadata, int usize){
+	size_t count = array_len(varray, usize);
+	char **carray = (char **) varray;
+	char *array = carray[0];
+
+	char *na = (char *) realloc(array, usize * (count + 2));
+	if(na == NULL){
+		exit(1); // TODO: Out of Memory
+	}
+
+	memcpy((na + (usize * (count))), vadata, usize);
+	memset((na + (usize * (count + 1))), NULL, usize);
+
+	carray[0] = na;
+}*/
+
+size_t array_len(struct array_element *list){
+	size_t size = 0;
+	while(list[size].data != NULL)
+		size++;
+
+	return size;
+}
+
+void array_push(struct array_element **list, struct array_element *element){
+	size_t count = array_len(list[0]);
+	struct array_element *ns = (struct array_element *) realloc(list[0],
+		sizeof(struct array_element) * (count + 2)
+	);
+
+	if(ns == NULL){
+		exit(1); // TODO: Out of Memory
+	}
+
+	memcpy(&ns[count], element, sizeof(struct array_element));
+	ns[count + 1].data = NULL;
+
+	list[0] = ns;
 }

@@ -36,23 +36,52 @@ struct entity_op entity_op[entity_op_size] = {
 
 #include <op.h>
 
-int on_tick_entity(struct map_entity *entity, struct graphics *graphics){
-	struct entity_op f = entity_op[entity->type];
-	if(f.on_tick == NULL){
-		printf("[TICK] Warning: Unhandled entity type (%i)\n", entity->type);
-
-		return 1;
-	}
-
+int entity_op_trigger(
+	void (*handle)(struct entity_op_data *),
+	struct map_entity *entity,
+	struct graphics *graphics
+){
 	struct entity_op_data data = {
 		.map = &map,
 		.entity = entity,
 		.graphics = graphics
 	};
 
-	f.on_tick(&data);
+	handle(&data);
 
 	return 0;
+}
+
+int on_tick_entity(struct map_entity *entity, struct graphics *graphics){
+	struct entity_op f = entity_op[entity->type];
+	if(f.on_tick == NULL){
+		printf("Warning: Unhandled entity type (%i)\n", entity->type);
+
+		return 1;
+	}
+
+	entity_op_trigger(f.on_tick, entity, graphics);
+
+	return 0;
+}
+
+int on_fps12_entity(struct map_entity *entity, struct graphics *graphics){
+	struct entity_op f = entity_op[entity->type];
+	if(f.on_fps12 == NULL){
+		return 1;
+	}
+
+	entity_op_trigger(f.on_fps12, entity, graphics);
+
+	return 0;
+}
+
+void on_fps12(void *user, void *data){
+	struct graphics *graphics = (struct graphics *) data;
+	size_t count = map_entities_len(&map);
+	for(int i = 0; i < count; i++){
+		on_fps12_entity(&map.entities[i], graphics);
+	}
 }
 
 int on_tick(struct graphics *graphics){
@@ -67,9 +96,9 @@ int on_tick(struct graphics *graphics){
 void on_loop(void *data){
 	struct graphics *gdata = (struct graphics *) data;
 	on_tick(gdata);
-	fps12(NULL, NULL);
-	fps24(NULL, NULL);
-	fps30(NULL, NULL);
+	fps12(NULL, NULL, NULL);
+	fps24(NULL, NULL, NULL);
+	fps30(NULL, NULL, NULL);
 }
 
 unsigned int entity_new_count = 0;
@@ -115,6 +144,8 @@ void on_create(void *data){
 
 		op->on_init(&op_data);
 	}
+
+	fps12(&on_fps12, NULL, gdata);
 }
 
 int main(){/*
