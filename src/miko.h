@@ -5,6 +5,7 @@
 #define MAP_ENTITY_UNSET 1
 #define OUT_OF_MEMORY 2
 
+#include <tinyspline.h>
 #include <sqlite3.h>
 #include <threads.h>
 #include <SDL3/SDL.h>

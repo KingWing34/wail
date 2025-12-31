@@ -36,7 +36,16 @@ static void on_fps12(struct entity_op_data *data){
 	slime->age += 1;
 	slime->frame = (slime->age / 4) % 10;
 	// texture.animation->count
-	if(slime->frame >= 4){
+	if(slime->frame >= 5){
+		if(slime->frame >= 8)
+			entity->position->y += 4;
+
+		if(slime->frame <= 7){
+			entity->position->y -= 2;
+		}
+
+		entity->position->y -= 1;
+
 		slime->frame = 5;
 	}
 
@@ -45,6 +54,10 @@ static void on_fps12(struct entity_op_data *data){
 		: 1
 	;
 	if(slime->frame > 4){
+		if(slime->frame < 8){
+			map_entity_move(entity, 2 * directionX, 0, 0);
+		}
+
 		map_entity_move(entity, 4 * directionX, 0, 0);
 	} else {
 		slime->directionX = ((int64_t) SDL_rand(2));
@@ -90,8 +103,8 @@ static void on_new(struct entity_op_data *data){
 	printf("%i CREATED\n", data->entity->type);
 	struct map_entity *entity = data->entity;
 
-	entity->position->x = 100;
-	entity->position->y = 0;
+	entity->position->x = 300;
+	entity->position->y = 100;
 	entity->position->z = 0;
 
 	struct slime_data *slime =
