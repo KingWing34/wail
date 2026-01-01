@@ -9,6 +9,11 @@
 #include <miko.h>
 #include <miko.c>
 
+#define INCBIN_PREFIX
+#include <incbin.h>
+
+INCTXT(bootup, "bootup");
+
 // src/gui/MainWindow.cpp
 int MainWindow(void (*on_create)(void *data), void (*on_loop)(void *data));
 
@@ -219,6 +224,7 @@ int main(){/*
 		//printf("%i) %i\n", i, map.entities[i].type);
 	}*/
 
+	printf("%s\n", bootupData);
 	mapgen();
 
 	if(MainWindow(on_create, on_loop) != 0) {

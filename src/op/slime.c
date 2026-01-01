@@ -32,6 +32,7 @@ static struct slime_data {
 	double x;
 	double z;
 	double xmov;
+	struct map_entity target;
 };
 
 int c = 0;
