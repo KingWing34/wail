@@ -22,7 +22,7 @@ static struct texture textures[] = {
 };
 
 
-static struct slime_data {
+struct slime_data {
 	size_t age;
 	size_t ticks;
 	size_t frame;
