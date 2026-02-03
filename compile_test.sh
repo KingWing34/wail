@@ -41,11 +41,9 @@ ln -s '../../../../resources/font/Noto_Sans/NotoSans-Italic-VariableFont_wdth,wg
 ln -s '../../resources/bootup.txt' \
 	build/resources/bootup.txt
 
-# TODO: Check on other systems if they accept the copied files, if not,
-# create appropriate symlinks.
-cp bin/SDL_bin/lib/*.so.0.2* build/lib
-cp bin/SDL_ttf_bin/lib/*.so.0.2* build/lib
-cp bin/SDL_image_bin/lib/*.so.0.2* build/lib
+cp -P bin/SDL_bin/lib/*.so* build/lib
+cp -P bin/SDL_ttf_bin/lib/*.so* build/lib
+cp -P bin/SDL_image_bin/lib/*.so* build/lib
 
 
 echo -e "${YELLOW}Compiling resources.${NC}"
@@ -78,7 +76,6 @@ g++ $INCLUDE_LIB_PATHS $LIB_NAMES $COMPILER_FLAGS \
 echo -e "${YELLOW}Basically linking everything together at this point!${NC}"
 
 cd build
-
 g++ *.o resources/*.o op/*.o \
 	-Wl,-rpath '$ORIGIN/lib' \
 	../bin/tinyspline_bin/lib64/libtinyspline.a \
