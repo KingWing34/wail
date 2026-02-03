@@ -19,14 +19,14 @@ Windows support will probably be added as soon as the project reaches a stable s
 
 **prerequisites**
 
-* NodeJS v10 or newer - To run src/op_gen.js (required to compile)
+* NodeJS v10 or newer - To run src/op_gen.js
 * Gifsicle (optional) - To fix gifs in src/res/
 
 
 **Downloading the project**
 
 First clone this repository with its submodules,
-This will pull the following additional repositories:
+this will pull the following additional repositories:
 
 * SDL3
 * SDL_ttf
