@@ -35,10 +35,10 @@ mkdir build/lib
 
 echo -e "${YELLOW}Creating links and copying files.${NC}"
 
-ln -s '../../../../resources/font/Noto_Sans/NotoSans-Italic-VariableFont_wdth,wght.ttf' \
+ln -s '../../../../src/res/font/Noto_Sans/NotoSans-Italic-VariableFont_wdth,wght.ttf' \
     build/resources/font/Noto_Sans/Default_Font.ttf
 
-ln -s '../../resources/bootup.txt' \
+ln -s '../../src/res/bootup.txt' \
 	build/resources/bootup.txt
 
 cp -P bin/SDL_bin/lib/*.so* build/lib
