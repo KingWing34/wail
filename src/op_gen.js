@@ -51,11 +51,10 @@ new Promise(async function(res){
 	].join(''))
 
 	entries.map(entry => exec(`echo ${entry} \/\/ &&
-g++ -I./ \\
- -fdiagnostics-color=always \
- -L../SDL3 -L../SDL3_ttf -lSDL3_image -lSDL3_ttf -lSDL3 \\
- 	\`pkg-config --cflags --libs sdl3 sdl3-image\` \\
- -Wall -Wextra -pedantic \\
+		g++ -I./ -fdiagnostics-color=always \
+		-I../bin/SDL_bin/include/ -I../bin/SDL_ttf_bin/include/ \
+		-I../bin/SDL_image_bin/include/ -I../bin/tinyspline_bin/include \
+		-Wall -Wextra -pedantic \\
  -c op/${entry.slice(0, -2)}.c \\
  -o op/${entry.slice(0, -2)}.o
 	`, summarize));

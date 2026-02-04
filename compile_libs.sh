@@ -6,6 +6,7 @@ YELLOW='\033[1;33m'
 GREEN='\033[1;32m'
 NC='\033[0m'
 
+
 # Exit on error
 set -e
 
@@ -18,6 +19,7 @@ mkdir bin
 mkdir bin/SDL_build
 mkdir bin/SDL_ttf_build
 mkdir bin/SDL_image_build
+mkdir bin/tinyspline_build
 
 mkdir bin/SDL_bin && cd bin/SDL_bin
 SDL_INSTALL_DIR="$(pwd)"
@@ -27,6 +29,9 @@ SDL_ttf_INSTALL_DIR="$(pwd)"
 cd ../../
 mkdir bin/SDL_image_bin && cd bin/SDL_image_bin
 SDL_image_INSTALL_DIR="$(pwd)"
+cd ../../
+mkdir bin/tinyspline_bin && cd bin/tinyspline_bin
+TINYSPLINE_INSTALL_DIR="$(pwd)"
 cd ../../
 
 echo -e "${YELLOW}Compiling SDL.${NC}"
@@ -52,6 +57,13 @@ make -j`nproc`
 make install
 cd ../../
 rm -rf bin/SDL_image_build
+echo -e "${YELLOW}Compiling tinyspline.${NC}"
+cd bin/tinyspline_build
+cmake --install-prefix $TINYSPLINE_INSTALL_DIR ../../tinyspline
+make -j`nproc`
+make install
+cd ../../
+rm -rf bin/tinyspline_build
 
 echo -e "${GREEN}Done!${NC}"
 
