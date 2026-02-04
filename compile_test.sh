@@ -46,7 +46,7 @@ set +e
 cp -P bin/SDL_bin/lib/*.so* build/lib
 cp -P bin/SDL_ttf_bin/lib/*.so* build/lib
 cp -P bin/SDL_image_bin/lib/*.so* build/lib
-#set -e
+set -e
 # Exit on error re-enabled
 
 echo -e "${YELLOW}Compiling resources.${NC}"
