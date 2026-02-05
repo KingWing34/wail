@@ -89,7 +89,7 @@ int MainWindow(void (*on_create)(void *data), void (*on_loop)(void *data)){
 
 	Uint32 window_flags = SDL_WINDOW_RESIZABLE
 		| SDL_WINDOW_TRANSPARENT
-		| SDL_WINDOW_BORDERLESS
+//		| SDL_WINDOW_BORDERLESS
 	;
 
 	if (!SDL_CreateWindowAndRenderer(

@@ -171,13 +171,18 @@ struct map_entity *entity_new(struct map *map,
 		.graphics = graphics,
 		.animation = animation,
 		.directionX = 0,
-		.directionY = 0
+		.directionY = 0,
+		.movspd = 0,
+		.custom = 0
 	};
 
 	struct entity_op_data data = {
 		.entity = &entity
 	};
 	struct entity_op *op = &entity_op[type];
+	data.entity->position->x = 0.0;
+	data.entity->position->y = 0.0;
+
 	if(op->on_new != NULL){
 		op->on_new(&data);
 	} else {
@@ -185,8 +190,6 @@ struct map_entity *entity_new(struct map *map,
 	}
 
 	struct map_entity *result = map_entities_add(map, &entity);
-	result->position->x = 0.0;
-	result->position->y = 0.0;
 
 	//printf("POS %.2f %.2f\n", result->position->x, result->position->y);
 
@@ -197,10 +200,15 @@ void (*start)();
 
 void mapgen(){
 	struct map_entity *slime = entity_new(&map, 101);
-	struct map_entity *entity = entity_new(&map, 0);
+	struct map_entity *entity = entity_new(&map, 50);
 	map_center = entity;
-	entity->position->x = -300;
-	entity->position->y = -100;
+
+	/*entity->position->x = 200;
+	entity->position->y = 200;
+	/*entity->destination->x = 0;
+	entity->destination->y = 0;*/
+	//entity->movspd = 1;
+	entity->custom = 0;
 	printf("MAPGEN\n");
 }
 
@@ -212,9 +220,12 @@ int scrh = 540;
 void on_create(void *data){
 	// Set a logical size of 800x600
 	// SDL_LOGICAL_PRESENTATION_LETTERBOX ensures the aspect ratio stays the same
-	SDL_SetRenderLogicalPresentation(renderer, 1440, 1280,
+	SDL_SetRenderLogicalPresentation(renderer, 1440, 1080,
 		SDL_LOGICAL_PRESENTATION_LETTERBOX
 	);
+	/*SDL_SetRenderLogicalPresentation(renderer, 720, 540,
+		SDL_LOGICAL_PRESENTATION_LETTERBOX
+	);*/
 
 	SDL_SetWindowSize(window, 720, 540);
 

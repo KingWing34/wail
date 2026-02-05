@@ -559,13 +559,18 @@ void map_entity_draw(struct map_entity *entity){
 
 	//printf("DRAW\n");
 	SDL_Renderer *renderer = entity->graphics->renderer;
-	SDL_Texture *frame = anim->frames[entity->animation->pos];
+	//printf("REN %ull\n", renderer);
+	SDL_Texture *frame = anim->frames[
+		entity->animation->pos % anim->count
+	];
+	//printf("%ull\n", frame);
 	SDL_SetTextureBlendMode(frame, SDL_BLENDMODE_BLEND);
 	//printf("SET_TEXTURE_BLEND_MODE\n");
+	//printf("DEBUG %i\n", entity->type);
 
 	if(!map_center){
 		// TODO: map_entity_draw(): OPTIM Check map_center elsewhere
-		//printf("MAP_CENTER_UNINITIALIZED\n");
+		printf("MAP_CENTER_UNINITIALIZED\n");
 		exit(1);
 	}
 
@@ -577,15 +582,15 @@ void map_entity_draw(struct map_entity *entity){
 	);
 	//printf("MAP_ENTITY_TRANSLATE\n");
 
+	/*
 	printf("\033[2A\r                                     \n");
 	printf("                                     \n");
 	printf("\033[2A");
-	printf("POSITION %.2f %.2f\n", position.x, position.y);
+	printf("POSITION %.2f %.2f\n", position.x, position.y);*/
 	printf("POSITION/DEBUG %.2f %.2f\n",
 		map_center->position->x,
 		map_center->position->y);
 	//printf("POS %.2f %.2f\n", result->position->x, result->position->y);
-
 	struct SDL_FRect frect;
 	map_position_to_frect(&position, &frect, 64, 64);
 

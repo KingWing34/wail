@@ -23,7 +23,7 @@ extern TTF_Font *	font;
 extern SDL_Texture *	TextTexture;
 extern SDL_IOStream *	fontIO;
 
-#define entity_op_size 1028
+#define entity_op_size 4096
 
 struct graphics {
 	SDL_Window *window;
@@ -87,6 +87,7 @@ struct map_entity_action {
 struct map_entity {
 	unsigned int id;
 	unsigned int type;
+	unsigned char custom;
 
 	struct map_entity *next;
 	struct map_entity_action *actions;
@@ -96,6 +97,7 @@ struct map_entity {
 	struct graphics *graphics;
 	int64_t directionX;
 	int64_t directionY;
+	double movspd;
 
 	void *data;
 };
@@ -167,5 +169,6 @@ void map_entity_go(struct map_entity *,
 	struct map_position *,
 	double
 );
+struct map_entity *entity_new(struct map *map, unsigned int type);
 
 #endif

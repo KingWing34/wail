@@ -77,6 +77,7 @@ static void on_fps12(struct entity_op_data *data){
 
 	if(slime->frame > 49){
 		map_entity_go(&fake, dest, &rest, 10);
+		entity->movspd = 10;
 
 		if(slime->x > rest.x)
 			slime->directionX = (double) 1;
@@ -86,6 +87,7 @@ static void on_fps12(struct entity_op_data *data){
 		slime->x += rest.x;
 		slime->y += rest.y;
 	} else if(slime->frame < 10){
+		entity->movspd = 0;
 		slime->xmov = ((double) (SDL_rand(20) + 10))/10;
 
 		if(((dest->x - slime->x) < 100)
@@ -176,6 +178,7 @@ static void on_new(struct entity_op_data *data){
 	slime->directionX = 1;
 	slime->directionY = 1;
 
+	entity->custom = 1;
 	entity->data = (void *) slime;
 }
 
