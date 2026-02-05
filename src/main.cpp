@@ -147,13 +147,30 @@ void on_loop(void *data){
 	fps30(NULL, NULL, NULL);
 }
 
+struct graphics *graphics = NULL;
 unsigned int entity_new_count = 0;
 struct map_entity *entity_new(struct map *map,
 	unsigned int type
 ){
+	printf("entity_new(): %i\n", type);
+
+	if(!graphics){
+		printf("entity_new(): GRAPHICS UNINITIALIZED\n");
+		exit(1);
+	}
+
+	// TODO: MALLOC_ALERT
+	struct animation *animation = (struct animation *) malloc(
+		sizeof(struct animation)
+	);
+
 	struct map_entity entity = {
 		.id = entity_new_count++,
-		.type = type
+		.type = type,
+		.graphics = graphics,
+		.animation = animation,
+		.directionX = 0,
+		.directionY = 0
 	};
 
 	struct entity_op_data data = {
@@ -166,22 +183,51 @@ struct map_entity *entity_new(struct map *map,
 		printf("[NEW] Warning: Unhandled entity type (%i)\n", type);
 	}
 
-	return map_entities_add(map, &entity);
+	struct map_entity *result = map_entities_add(map, &entity);
+	result->position->x = 0.0;
+	result->position->y = 0.0;
+
+	//printf("POS %.2f %.2f\n", result->position->x, result->position->y);
+
+	return result;
 }
 
 void (*start)();
 
 void mapgen(){
-	struct map_entity *entity = entity_new(&map, 101);
+	struct map_entity *slime = entity_new(&map, 101);
+	struct map_entity *entity = entity_new(&map, 0);
+	map_center = entity;
+	entity->position->x = -300;
+	entity->position->y = -100;
+	printf("MAPGEN\n");
 }
 
+int scrw = 720;
+int scrh = 540;
+
+// void *data is always of struct graphics type
+// ONLY CALLED ONCE AFTER WINDOW CREATION
 void on_create(void *data){
+	// Set a logical size of 800x600
+	// SDL_LOGICAL_PRESENTATION_LETTERBOX ensures the aspect ratio stays the same
+	SDL_SetRenderLogicalPresentation(renderer, 1440, 1280,
+		SDL_LOGICAL_PRESENTATION_LETTERBOX
+	);
+
+	SDL_SetWindowSize(window, 720, 540);
+
 	struct graphics *gdata = (struct graphics *) data;
 	struct entity_op_data op_data = {
 		.map = &map,
 		.entity = NULL,
 		.graphics = gdata
 	};
+
+	printf("WCREATE\n");
+	graphics = gdata;
+	map_new(&map);
+	mapgen();
 
 	for(int i = 0; i < entity_op_size; i++){
 		struct entity_op *op = &entity_op[i];
@@ -198,16 +244,13 @@ void on_create(void *data){
 
 
 int main(){
-	map_new(&map);
-
 	OP_INCLUDE();
 
 	// Print bootup "art"
 	printf("%.*s", (int)txt_size, bootup_txt_data);
 
-	mapgen();
-
 	if(MainWindow(on_create, on_loop) != 0) {
+		printf("CLEANUP\n");
 		cleanup();
 		return 1;
 	}

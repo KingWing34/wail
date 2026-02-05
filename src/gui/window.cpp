@@ -77,13 +77,27 @@ int MainWindow(void (*on_create)(void *data), void (*on_loop)(void *data)){
 
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
+	//SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
+	// 0 = nearest neighbor (pixelated), 1 = linear (smooth)
 
 	// TODO (create window with paramaters from config file)
-	if (!SDL_CreateWindowAndRenderer (
+	/*if (!SDL_CreateWindowAndRenderer (
 		PROGRAM_NAME " " PROGRAM_VERSION,
 		WINDOW_WIDTH, WINDOW_HEIGHT,
 		SDL_WINDOW_RESIZABLE,
-	&window, &renderer)){
+	&window, &renderer))*/
+
+	Uint32 window_flags = SDL_WINDOW_RESIZABLE
+		| SDL_WINDOW_TRANSPARENT
+		| SDL_WINDOW_BORDERLESS
+	;
+
+	if (!SDL_CreateWindowAndRenderer(
+		PROGRAM_NAME " " PROGRAM_VERSION,
+		WINDOW_WIDTH, WINDOW_HEIGHT,
+		window_flags,
+		&window, &renderer
+	)){
 		SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
 		return 1;
 	}
@@ -94,8 +108,6 @@ int MainWindow(void (*on_create)(void *data), void (*on_loop)(void *data)){
 	};
 
 	on_create(&gdata);
-
-	// Main program loop
 	while (!SDL_tasks_done) {
 		SDL_Event event;
 
@@ -106,7 +118,7 @@ int MainWindow(void (*on_create)(void *data), void (*on_loop)(void *data)){
 		}
 
 		// Clear the window making the background transparent
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 		SDL_RenderClear(renderer);
 
 		on_loop(&gdata);

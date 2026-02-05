@@ -1,8 +1,7 @@
 #include <stdint.h>
 #include <math.h>
 
-struct map_entity *map_center;
-
+struct map_entity *map_center = NULL;
 size_t map_width = 4096;
 size_t map_height = 4096;
 
@@ -540,7 +539,62 @@ void timing(tsBSpline *spline, float pos, float *result){
 	ts_deboornet_free(&net);
 }
 
+struct texture_animation *map_entity_get_animation(
+	const struct map_entity *entity
+){
+	return entity->animation->texture->animation;
+}
+
+/** map_entity_draw usage guide
+	entity->directionX
+		determines whether the texture is rendered flipped or not
+
+	entity->position
+		determines where the entity is relative to the map
+
+*/
 void map_entity_draw(struct map_entity *entity){
-	// TODO: What the hell
-	//entity->animation->texture->animation->framws
+	struct texture_animation *anim = map_entity_get_animation(entity);
+	struct map_entity_base *data = (struct map_entity_base *) entity->data;
+
+	//printf("DRAW\n");
+	SDL_Renderer *renderer = entity->graphics->renderer;
+	SDL_Texture *frame = anim->frames[entity->animation->pos];
+	SDL_SetTextureBlendMode(frame, SDL_BLENDMODE_BLEND);
+	//printf("SET_TEXTURE_BLEND_MODE\n");
+
+	if(!map_center){
+		// TODO: map_entity_draw(): OPTIM Check map_center elsewhere
+		//printf("MAP_CENTER_UNINITIALIZED\n");
+		exit(1);
+	}
+
+	struct map_position position = { 0 };
+	map_entity_translate(
+		map_center,
+		entity,
+		&position
+	);
+	//printf("MAP_ENTITY_TRANSLATE\n");
+
+	printf("\033[2A\r                                     \n");
+	printf("                                     \n");
+	printf("\033[2A");
+	printf("POSITION %.2f %.2f\n", position.x, position.y);
+	printf("POSITION/DEBUG %.2f %.2f\n",
+		map_center->position->x,
+		map_center->position->y);
+	//printf("POS %.2f %.2f\n", result->position->x, result->position->y);
+
+	struct SDL_FRect frect;
+	map_position_to_frect(&position, &frect, 64, 64);
+
+	if(entity->directionX == -1){
+		SDL_RenderTextureRotated(renderer, frame, NULL, &frect, 0,
+			NULL,
+			SDL_FLIP_HORIZONTAL
+		);
+	} else {
+		SDL_RenderTexture(renderer, frame, NULL, &frect);
+	}
 }

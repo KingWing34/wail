@@ -14,6 +14,15 @@
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
+extern SDL_Window *	window;
+extern SDL_Renderer *	renderer;
+extern SDL_Texture *	texture;
+extern SDL_Surface *	surface;
+extern SDL_IOStream *	StarupImgIO;
+extern TTF_Font *	font;
+extern SDL_Texture *	TextTexture;
+extern SDL_IOStream *	fontIO;
+
 #define entity_op_size 1028
 
 struct graphics {
@@ -57,6 +66,7 @@ void load_textures(
 );
 struct animation {
 	struct texture *texture;
+	size_t pos;
 };
 
 struct map_position {
@@ -82,8 +92,25 @@ struct map_entity {
 	struct map_entity_action *actions;
 	struct map_position position[1];
 	struct animation *animation;
+	struct graphics *graphics;
+	int64_t directionX;
+	int64_t directionY;
+
 	void *data;
 };
+
+/*struct map_entity_base {
+	size_t age;
+	size_t ticks;
+	size_t frame;
+	double directionX;
+	double directionY;
+	double y;
+	double x;
+	double z;
+	double xmov;
+	struct map_entity target;
+};*/
 
 struct map {
 	struct map_entity *entities;
@@ -104,6 +131,9 @@ struct map_entity *map_entities_get(struct map *, size_t);
 int map_entity_position(struct map_entity *entity);
 void map_entity_move(
 	struct map_entity *, float, float, float
+);
+void map_entity_draw(
+	struct map_entity *
 );
 
 void map_entity_translate(

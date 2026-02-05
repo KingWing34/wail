@@ -80,20 +80,41 @@ echo -e "${YELLOW}Basically linking everything together at this point!${NC}"
 
 cd build
 
+USE_SYSLIB=0;
+while getopts "s" opt; do
+	case $opt in
+	s)
+		USE_SYSLIB=1
+		;;
+	\?)
+		# Handle invalid options or missing arguments
+		echo "Invalid option: -$OPTARG" >&2
+		exit 1
+		;;
+	esac
+done
+echo "$USE_SYSLIB"
+
+if [ "$USE_SYSLIB" -eq 1 ]; then
+echo -e "${YELLOW}Using system lib (-s)"
+g++ *.o resources/*.o op/*.o \
+	-Wl,-rpath "$ORIGIN/lib" -ltinyspline \
+	$LINKING_FILE_PATHS $LIB_NAMES $COMPILER_FLAGS \
+	-o test_build ;
+else
 # A rather dirty way to try to link the code in one way or try in another if the previous failed
 # the difference is the presence or absence of ../bin/tinyspline_bin/lib64/libtinyspline.a
 g++ *.o resources/*.o op/*.o \
-	-Wl,-rpath '$ORIGIN/lib' \
+	-Wl,-rpath "$ORIGIN/lib" \
 	../bin/tinyspline_bin/lib64/libtinyspline.a \
 	$LINKING_FILE_PATHS $LIB_NAMES $COMPILER_FLAGS \
 	-o test_build || \
 { echo -e "${YELLOW}Linking using provided libs failed, trying system libs!${NC}" ; \
 g++ *.o resources/*.o op/*.o \
-	-Wl,-rpath '$ORIGIN/lib' -ltinyspline \
+	-Wl,-rpath "$ORIGIN/lib" -ltinyspline \
 	$LINKING_FILE_PATHS $LIB_NAMES $COMPILER_FLAGS \
 	-o test_build ; }
-
-
+fi
 echo -e "${GREEN}Done!${NC}"
 
 exit

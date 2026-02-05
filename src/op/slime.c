@@ -35,6 +35,22 @@ struct slime_data {
 	struct map_entity target;
 };
 
+struct map_position dests[] = {
+	{
+		.x = 0,
+		.y = 900,
+		.z = 0
+	}, {
+		.x = 0,
+		.y = 900,
+		.z = 0
+	}, {
+		.x = 900,
+		.y = 900,
+		.z = 0
+	}
+};
+
 int c = 0;
 static void on_fps12(struct entity_op_data *data){
 	struct texture texture = textures[0];
@@ -51,11 +67,13 @@ static void on_fps12(struct entity_op_data *data){
 	fake.position->y = slime->y;
 	fake.position->z = slime->z;
 
-	struct map_position dest = {
-		.x = 100,
-		.y = 200,
+	/*struct map_position dest = {
+		.x = 0,
+		.y = 300,
 		.z = 0
-	};
+	};*/
+
+	struct map_position *dest = &dests[0];
 
 	struct map_position rest = {
 		.x = 0,
@@ -64,32 +82,35 @@ static void on_fps12(struct entity_op_data *data){
 	};
 
 	if(slime->frame > 49){
-		/*if(slime->frame > 70){
-			map_entity_move(entity, xmov * directionX, 0, 0);
-		}
-
-		map_entity_move(entity, (xmov/2) * directionX, 0, 0);*/
-		map_entity_go(&fake, &dest, &rest, 10);
-		//printf("[rest ] %f %f %f\n", rest.x, rest.y, rest.z);
-		//printf("[slime] %f %f %f\n", slime->x, slime->y, slime->z);
+		map_entity_go(&fake, dest, &rest, 10);
 
 		if(slime->x > rest.x)
 			slime->directionX = (double) 1;
 		else
 			slime->directionX = (double) 0;
 
-		/*slime->x = rest.x;
-		slime->y = rest.y;
-		slime->z = rest.z;*/
 		slime->x += rest.x;
 		slime->y += rest.y;
 	} else if(slime->frame < 10){
 		slime->xmov = ((double) (SDL_rand(20) + 10))/10;
+
+		if(((dest->x - slime->x) < 100)
+			&& ((dest->x - slime->x) > -100)
+		){
+			if(dest->x < 800){
+				memcpy(&dests[0], &dests[2],
+					sizeof(struct map_position)
+				);
+			} else {
+				memcpy(&dests[0], &dests[1],
+					sizeof(struct map_position)
+				);
+			}
+		}
 	}
 }
 
 static void on_fps30(struct entity_op_data *data){
-	//SDL_Renderer *renderer = data->graphics->renderer;
 	struct map_entity *entity = data->entity;
 	struct texture texture = textures[0];
 	struct slime_data *slime = (struct slime_data *) entity->data;
@@ -103,22 +124,20 @@ static void on_tick(struct entity_op_data *data){
 	SDL_Renderer *renderer = data->graphics->renderer;
 	struct texture texture = textures[0];
 	size_t cframe = slime->frame;
-	SDL_Texture *frame = texture.animation->frames[
-		cframe/10
-	];
-	SDL_SetTextureBlendMode(frame, SDL_BLENDMODE_BLEND);
 
-	struct SDL_FRect frect;
-	map_position_to_frect(entity->position, &frect, 64, 64);
+	//entity->position->x = slime->x;
+	//entity->position->y = slime->y;
 
+	entity->animation->texture = &textures[0];
+	entity->graphics->renderer = data->graphics->renderer;
+	entity->animation->pos = cframe/10;
 	if(slime->directionX == 0 && slime->frame > 4){
-		SDL_RenderTextureRotated(renderer, frame, NULL, &frect, 0,
-			NULL,
-			SDL_FLIP_HORIZONTAL
-		);
+		entity->directionX = -1;
 	} else {
-		SDL_RenderTexture(renderer, frame, NULL, &frect);
+		entity->directionX = 1;
 	}
+
+	map_entity_draw(entity);
 
 	int width;
 	int height;
@@ -126,20 +145,6 @@ static void on_tick(struct entity_op_data *data){
 	SDL_GetWindowSize(data->graphics->window, &width, &height);
 
 	slime->frame = slime->age % 100;
-	// texture.animation->count
-	/*if(slime->frame >= 5){
-		if(slime->frame >= 8)
-			entity->position->y += 4;
-
-		if(slime->frame <= 7){
-			entity->position->y -= 2;
-		}
-
-		entity->position->y -= 1;
-
-		slime->frame = 5;
-	}*/
-
 	entity->position->x = slime->x;
 	entity->position->y = slime->y;
 
@@ -150,15 +155,10 @@ static void on_tick(struct entity_op_data *data){
 			progress = 1.0f
 		;
 		timing(NULL, progress, ypos);
-		//printf("%f %f\n", progress, ypos[0], ypos[1]);
 		entity->position->y = slime->y - ypos[0]/10.0f;
 
 		slime->frame = 50;
 	}
-
-	//printf("%i\r", counter);
-	//fflush(stdout);
-
 
 	fflush(stdout);
 }
@@ -172,12 +172,11 @@ static void on_init(struct entity_op_data *data){
 }
 
 static void on_new(struct entity_op_data *data){
-	//printf("%i CREATED\n", data->entity->type);
 	struct map_entity *entity = data->entity;
 	struct slime_data *slime =
 		(struct slime_data *) malloc(sizeof(struct slime_data))
 	;
-	slime->x = 0;
+	slime->x = 600;
 	slime->y = 0;
 	slime->age = 0;
 	slime->directionX = 1;
@@ -206,17 +205,5 @@ void op_slime(){
 	float pos[2] = { 0, 0 };
 	for(float i = 0.0f; i < 1.0f; i += 0.01f){
 		timing(NULL, i, pos);
-
-		//printf("[ %f, %f ]\n", pos[0], pos[1]);
 	}
-
-	/*size_t i = 0;
-	while(i < 63){
-		test[i].data = (void *) "Hemlo";
-		i++;
-	}
-
-	test[63].data = NULL;
-
-	printf("Length: %zu\n", array_len(test));*/
 }
