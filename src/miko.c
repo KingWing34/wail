@@ -27,8 +27,7 @@ void load_textures(
 		textures[i].animation_data = IMG_LoadAnimation(
 			path
 		);
-
-		printf("%lld\n", textures[i].animation_data);
+		//printf("%s\n", path);
 
 		struct texture_animation *animation =
 			(struct texture_animation *) malloc(
@@ -56,7 +55,9 @@ void load_textures(
 			.h = (int) resize.h
 		};
 
-		for(size_t j = 0; j < animation->count; j++){
+		size_t j = 0;
+		for(; j < animation->count; j++){
+			//printf("[%i] adat -> %ull\n", i, animation->frames);
 			SDL_Surface *surface = textures[i]
 				.animation_data
 				->frames[j]
@@ -88,7 +89,7 @@ void load_textures(
 			SDL_DestroySurface(ns);
 		}
 
-		animation->frames[animation->count] = NULL;
+		animation->frames[j] = NULL;
 	}
 }
 int map_new(struct map *map){
@@ -642,7 +643,6 @@ void map_entity_draw(struct map_entity *entity){
 	SDL_Texture *frame = anim->frames[
 		entity->animation->pos % anim->count
 	];
-	//printf("%ull\n", frame);
 	SDL_SetTextureBlendMode(frame, SDL_BLENDMODE_BLEND);
 	//printf("SET_TEXTURE_BLEND_MODE\n");
 	//printf("DEBUG %i\n", entity->type);
